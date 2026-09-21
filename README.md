@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Buysellox Admin
 
-## Getting Started
+Super-admin dashboard for the Buysellox website + mobile app. Separate Next.js project, deployed on its own (e.g. `admin.buysellox.com`), talking to the same Supabase project as the site and app.
 
-First, run the development server:
+## What it does
+
+| Section | What you can do |
+| --- | --- |
+| **Overview** | KPIs (users, active ads, 30-day revenue, open reports, subscriptions, chat volume, app devices), 30-day charts, latest ads/users/reports |
+| **Listings** | Search/filter every ad (any status), approve pending ads, take down, mark sold, delete, bulk actions, free promotions (Featured/Hot/Super Hot for N days), bump, extend expiry, edit title/price/description, remove photos |
+| **Users** | Search by name/email/phone, verified-seller badge, admin role, edit profile, set credit wallets, ban / ban + hide ads, unban, password reset, delete account |
+| **Reports** | Queue of user reports with the ad preview — take the ad down, dismiss, mark reviewed, reopen |
+| **Payments** | All promotion purchases and credit bundles; revenue totals; manually confirm pending JazzCash/Easypaisa payments (applies the package exactly like the webhook), mark failed, refund |
+| **Subscriptions** | Dealer/shop/agency plans; grant a plan manually (with credits), cancel/activate, edit slot limit and period end |
+| **Packages** | Edit promotion prices, durations, bundle credits, on/off sale |
+| **Chats** | Browse conversations, read threads (text, voice, attachments), delete abusive messages or whole conversations |
+| **Requirements** | Property "I'm looking for…" posts — fulfil, expire, delete |
+| **Push notifications** | Send announcements to app users (everyone / city / active sellers / one user) with recipient preview and campaign history |
+| **Settings** | Manage admins, environment status, platform limits |
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install --legacy-peer-deps
+cp .env.example .env.local   # fill in the values below
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Var | Where to get it |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same as the website / app |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase dashboard → Project Settings → API → `service_role`. **Server-only secret** — never commit it or expose it to a browser |
+| `NEXT_PUBLIC_SITE_URL` | Public site, for "open on site" links (default `https://buysellox.com`) |
+| `EXPO_ACCESS_TOKEN` | Optional; only if "Enhanced push security" is enabled on the Expo project |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Make yourself the first admin (the account must already exist on the site/app):
 
-## Learn More
+```bash
+npm run make-admin you@example.com
+```
 
-To learn more about Next.js, take a look at the following resources:
+Then:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev      # http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Sign in with your normal Buysellox email + password. Non-admin accounts are refused.
 
-## Deploy on Vercel
+## Deploying
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Any Node host works (Vercel is the simplest — import the repo, add the four env vars, deploy). Put it on its own subdomain and keep it out of search engines (the app already sends `noindex`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+
+- Everything runs through the Supabase **service-role** key on the server, so the dashboard can see and change anything regardless of RLS. Every server action re-checks that the caller is an admin.
+- The shared `lib/*` files listed in `CLAUDE.md` are copies of the web repo's — re-copy them when the site changes.
+- Schema changes (new tables, RPCs) belong in the web repo's `supabase/migrations`, not here.
