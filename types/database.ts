@@ -11,7 +11,8 @@ export type Badge = "featured" | "urgent" | "top" | "hot" | "super_hot";
 export type PaymentMethod = "jazzcash" | "easypaisa" | "card" | "lemonsqueezy";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type ReportStatus = "open" | "reviewed" | "dismissed";
-export type ReportReason = "spam" | "scam" | "prohibited" | "other";
+export type ReportReason = "spam" | "scam" | "prohibited" | "harassment" | "other";
+export type ReportTargetType = "listing" | "user" | "message";
 
 export interface Profile {
   id: string;
@@ -131,11 +132,26 @@ export interface Message {
 
 export interface Report {
   id: string;
-  listing_id: string;
+  /** Listing the report is about, or the listing behind a reported message; null for user reports (0027). */
+  listing_id: string | null;
   reporter_id: string;
+  target_type: ReportTargetType;
+  /** Listing, profile or message id, per `target_type`. */
+  target_id: string;
+  /** Listing owner / reported user / message sender — the account admins act on. */
+  reported_user_id: string;
+  /** Listing title or message text at report time, for the admin queue. */
+  excerpt: string | null;
   reason: ReportReason;
   details: string | null;
   status: ReportStatus;
+  created_at: string;
+}
+
+/** `blocker_id` blocked `blocked_id`; listings and chats are hidden both ways (0027). */
+export interface Block {
+  blocker_id: string;
+  blocked_id: string;
   created_at: string;
 }
 

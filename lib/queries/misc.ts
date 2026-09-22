@@ -6,15 +6,21 @@ import type { AdPromotion, Conversation, Listing, Message, Package, PushCampaign
 export type ReportRow = Report & {
   listing: Pick<Listing, "id" | "title" | "status" | "images" | "user_id" | "city" | "category_slug" | "slug" | "city_slug"> | null;
   reporter: ProfileMini | null;
+  /** Listing owner / reported user / message sender (web migration 0027). */
+  reported: ProfileMini | null;
 };
 
-export async function listReports(f: { status?: string; reason?: string; page?: string }) {
+export async function listReports(f: { status?: string; reason?: string; target?: string; page?: string }) {
   const { from, to, page, pageSize } = pageRange(Number(f.page) || 1);
   let q = db()
     .from("reports")
-    .select(`*, listing:listings(id, title, status, images, user_id, city, category_slug, slug, city_slug), reporter:profiles!reports_reporter_id_fkey(${PROFILE_MINI})`, { count: "exact" });
+    .select(
+      `*, listing:listings(id, title, status, images, user_id, city, category_slug, slug, city_slug), reporter:profiles!reports_reporter_id_fkey(${PROFILE_MINI}), reported:profiles!reports_reported_user_id_fkey(${PROFILE_MINI})`,
+      { count: "exact" }
+    );
   q = q.eq("status", f.status || "open");
   if (f.reason) q = q.eq("reason", f.reason);
+  if (f.target) q = q.eq("target_type", f.target);
   const { data, error, count } = await q.order("created_at", { ascending: false }).range(from, to);
   if (error) throw error;
   return { rows: (data ?? []) as unknown as ReportRow[], total: count ?? 0, page, pageSize };

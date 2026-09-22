@@ -150,6 +150,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                   { label: "Sign-in via", value: auth?.providers.join(", ") || "—" },
                   { label: "App devices", value: d.devices.length ? d.devices.map((x) => x.platform).join(", ") : "none" },
                   { label: "Reports filed", value: d.reportsMade },
+                  { label: "Reports against", value: d.reportsAgainst },
                   { label: "User ID", value: p.id },
                 ]}
               />

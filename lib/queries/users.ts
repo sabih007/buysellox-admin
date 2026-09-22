@@ -60,13 +60,14 @@ export interface AuthInfo {
 
 export async function getUserDetail(id: string) {
   const supabase = db();
-  const [{ data: profile, error }, listings, subscription, promotions, auth, reportsMade, pushTokens] = await Promise.all([
+  const [{ data: profile, error }, listings, subscription, promotions, auth, reportsMade, reportsAgainst, pushTokens] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
     supabase.from("listings").select("*").eq("user_id", id).order("created_at", { ascending: false }).limit(100),
     supabase.from("subscriptions").select("*").eq("user_id", id).maybeSingle(),
     supabase.from("ad_promotions").select("*, package:packages(name, key)").eq("user_id", id).order("created_at", { ascending: false }).limit(50),
     supabase.auth.admin.getUserById(id),
     supabase.from("reports").select("*", { count: "exact", head: true }).eq("reporter_id", id),
+    supabase.from("reports").select("*", { count: "exact", head: true }).eq("reported_user_id", id),
     supabase.from("push_tokens").select("platform, updated_at").eq("user_id", id),
   ]);
   if (error) throw error;
@@ -90,6 +91,7 @@ export async function getUserDetail(id: string) {
     promotions: (promotions.data ?? []) as unknown as (AdPromotion & { package: Pick<Package, "name" | "key"> | null })[],
     auth: authInfo,
     reportsMade: reportsMade.count ?? 0,
+    reportsAgainst: reportsAgainst.count ?? 0,
     devices: (pushTokens.data ?? []) as { platform: string; updated_at: string }[],
   };
 }
