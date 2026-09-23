@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -39,7 +40,12 @@ export function LoginForm({ next, signedInAs }: { next: string; signedInAs: stri
         <input className="input" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
       </label>
       <label className="block">
-        <span className="label">Password</span>
+        <div className="flex items-baseline justify-between">
+          <span className="label">Password</span>
+          <Link href="/forgot-password" className="mb-1 text-xs font-semibold text-primary hover:underline">
+            Forgot?
+          </Link>
+        </div>
         <input className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
       </label>
       {error ? <div className="text-sm text-danger">{error}</div> : null}

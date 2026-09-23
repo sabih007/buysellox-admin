@@ -23,7 +23,14 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isPublic = pathname === "/login" || pathname.startsWith("/api/auth");
+  // Signed-out visitors need these to recover an account. /auth/* carries the
+  // Supabase recovery code exchange, which by definition runs before a session exists.
+  const isPublic =
+    pathname === "/login" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password" ||
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/api/auth");
   if (!user && !isPublic) {
     const url = new URL("/login", request.url);
     if (pathname !== "/") url.searchParams.set("next", pathname);
