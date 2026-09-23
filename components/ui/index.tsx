@@ -158,7 +158,7 @@ export function Avatar({ src, name, size = 32 }: { src?: string | null; name?: s
 export function UserLink({ user, size = 28 }: { user: { id: string; full_name: string | null; email?: string | null; avatar_url?: string | null } | null | undefined; size?: number }) {
   if (!user) return <span className="text-ink-muted">Unknown user</span>;
   return (
-    <Link href={`/users/${user.id}`} className="flex items-center gap-2 hover:underline">
+    <Link href={`/users/${user.id}`} className="flex min-w-0 items-center gap-2 hover:underline">
       <Avatar src={user.avatar_url} name={user.full_name} size={size} />
       <span className="min-w-0">
         <span className="block truncate font-medium text-ink">{user.full_name ?? "Unnamed"}</span>
